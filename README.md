@@ -15,8 +15,7 @@
 * NOTE: The question does not need to be exactly like above
 
 ## Installation
-[CENTER]
-1. Download the Jar file by clicking "Download" on this resource[/SIZE][/LEFT]
+1. Download the Jar file by clicking "Download" on this resource
 1. Put the "QAPlugin-module-xxxxxxxx.jar" inside the modules folder (**plugins\QAPlugin\modules**)
 1. Restart the plugin or do **/qaplugin reload**
 1. Check the console, it should say "loaded module ..."
