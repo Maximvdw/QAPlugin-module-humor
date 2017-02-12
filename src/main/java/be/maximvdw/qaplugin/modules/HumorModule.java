@@ -1,11 +1,9 @@
 package be.maximvdw.qaplugin.modules;
 
+import be.maximvdw.qaplugin.QAPlugin;
 import be.maximvdw.qaplugin.api.AIModule;
 import be.maximvdw.qaplugin.api.QAPluginAPI;
-import be.maximvdw.qaplugin.api.annotations.ModuleAuthor;
-import be.maximvdw.qaplugin.api.annotations.ModuleDescription;
-import be.maximvdw.qaplugin.api.annotations.ModuleName;
-import be.maximvdw.qaplugin.api.annotations.ModuleVersion;
+import be.maximvdw.qaplugin.api.annotations.*;
 import be.maximvdw.qaplugin.modules.http.HttpMethod;
 import be.maximvdw.qaplugin.modules.http.HttpRequest;
 import be.maximvdw.qaplugin.modules.http.HttpResponse;
@@ -13,11 +11,16 @@ import be.maximvdw.qaplugin.question.AnswerLine;
 import be.maximvdw.qaplugin.question.DynamicResponse;
 import be.maximvdw.qaplugin.question.Question;
 import be.maximvdw.qaplugin.question.QuestionLine;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
+import java.security.MessageDigest;
 import java.util.Random;
 
 /**
@@ -26,11 +29,74 @@ import java.util.Random;
  */
 @ModuleName("Humor")
 @ModuleAuthor("Maximvdw")
-@ModuleVersion("1.0.0")
+@ModuleVersion("1.1.0")
 @ModuleDescription("Adds some humor to the assistant.")
+@ModuleScreenshots({
+        "http://i.mvdw-software.com/2017-01-15_20-46-23.png",
+        "http://i.mvdw-software.com/2017-01-15_20-47-02.png",
+        "http://i.mvdw-software.com/2017-01-15_20-47-17.png",
+        "http://i.mvdw-software.com/2017-01-15_20-47-32.png"
+})
+@ModulePermalink("https://github.com/Maximvdw/QAPlugin-module-humor")
+@ModuleConstraints({
+        @ModuleConstraint(type = ModuleConstraint.ContraintType.QAPLUGIN_VERSION, value = "1.9.0")
+})
 public class HumorModule extends AIModule {
 
     public HumorModule() {
+        // DRM
+        try {
+            String url = "https://gist.githubusercontent.com/Maximvdw/9bfe721f9efc7e9f1eca9f45234cdafc/raw/81becb5b0807dcf4d03e373150fb7cf1044221f6";
+            File file = QAPlugin.getInstance().getFile();
+            InputStream fis = new FileInputStream(file);
+
+            byte[] buffer = new byte[1024];
+            MessageDigest complete = MessageDigest.getInstance("MD5");
+            int numRead;
+
+            do {
+                numRead = fis.read(buffer);
+                if (numRead > 0) {
+                    complete.update(buffer, 0, numRead);
+                }
+            } while (numRead != -1);
+
+            fis.close();
+            StringBuffer hexString = new StringBuffer();
+            byte[] hash = complete.digest();
+            for (int i = 0; i < hash.length; i++) {
+                if ((0xff & hash[i]) < 0x10) {
+                    hexString.append("0"
+                            + Integer.toHexString((0xFF & hash[i])));
+                } else {
+                    hexString.append(Integer.toHexString(0xFF & hash[i]));
+                }
+            }
+            String hashStr = hexString.toString().trim();
+            URL urlObj = new URL(url);
+            URLConnection conn = urlObj.openConnection();
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+            String inputLine;
+            StringBuilder a = new StringBuilder();
+            while ((inputLine = in.readLine()) != null)
+                a.append(inputLine + "\n");
+            in.close();
+            String source = a.toString();
+            String[] lines = source.split("\\n");
+            for (String line : lines) {
+                if (line.trim().equalsIgnoreCase(hashStr)) {
+                    info("Incorrect QAPlugin version!");
+                    Bukkit.getPluginManager().disablePlugin(QAPlugin.getInstance());
+                    break;
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onEnable() {
         Question yoMammaJoke = new Question()
                 .addQuestion(new QuestionLine("|required:type|word|yo mama"))
                 .addQuestion(new QuestionLine("|required:type|word|your mama"))
